@@ -8,27 +8,77 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 8000 // Change this to your server port
-    return `http://localhost:${port}/data/restaurants.json`;
+    const port = 1337 // Change this to your server port
+    return `http://localhost:${port}/restaurants`;
   }
+
+  // /**
+  //  * Fetch all restaurants.
+  //  */
+  // static fetchRestaurants(callback) {
+  //   let xhr = new XMLHttpRequest();
+  //   xhr.open('GET', DBHelper.DATABASE_URL);
+  //   xhr.onload = () => {
+  //     if (xhr.status === 200) { // Got a success response from server!
+  //       const json = JSON.parse(xhr.responseText);
+  //       const restaurants = json.restaurants;
+  //       callback(null, restaurants);
+  //     } else { // Oops!. Got an error from server.
+  //       const error = (`Request failed. Returned status of ${xhr.status}`);
+  //       callback(error, null);
+  //     }
+  //   };
+  //   xhr.send();
+  // }
+
+
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+    const dbPromise = idb.open('restauntsDB', 1, function(upgradeDb) {
+      upgradeDb.createObjectStore('restaurants' , {
+        keyPath: 'id'
+      });
+    });
+
+    dbPromise.then(function(db) {
+      // create the transaction in read/write operation and open the store for restaurants
+      var tx = db.transaction('restaurants');
+      var restaurantStore = tx.objectStore('restaurants');
+      return restaurantStore.getAll();
+    }).then(function (restaurants){
+      if (restaurants.length == 0 ) {
+        console.log("no hay datos");
+        // No data on BBDD. Fetching from our server
+        fetch(DBHelper.DATABASE_URL)
+          .then(response => response.json())
+          .then(function(restaurants) {
+            console.log("vamos a añadir");
+            console.log(restaurants);
+            // adding to database
+            dbPromise.then( db =>{
+              var tx = db.transaction('restaurants','readwrite');
+            var restaurantStore = tx.objectStore('restaurants');
+
+            restaurants.forEach(element => {
+              restaurantStore.put(element);
+            });
+            callback(null,restaurants);
+            });
+          })
+          .catch(function(error) {
+            console.log("fallo red");
+            callback(error,null);
+          })
+      } else {
+        console.log("hay datos");
+        console.log(restaurants);
+        // Restuarants in DB
+        callback(null,restaurants);
       }
-    };
-    xhr.send();
+    })
   }
 
   /**
@@ -91,7 +141,7 @@ class DBHelper {
       if (error) {
         callback(error, null);
       } else {
-        let results = restaurants
+        let results = restaurants;
         if (cuisine != 'all') { // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
@@ -151,8 +201,8 @@ class DBHelper {
    */
   static imagesSrcsetForRestaurant(restaurant) {
     // adding atributtes for responsive images
-    const extension=restaurant.photograph.match(/\.([^.\\\/]+)$/).pop();
-    const filename = restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
+    const extension="jpg";//restaurant.photograph.match(/\.([^.\\\/]+)$/).pop();
+    const filename = restaurant.photograph;//restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
     return (`/img/${filename}-small.${extension} 250w,
             /img/${filename}-medium.${extension} 460w,
             /img/${filename}-large.${extension} 800w`);
@@ -172,8 +222,9 @@ class DBHelper {
    */
   static imageUrlForRestaurant(restaurant) {
     // adding atributtes for responsive images
-    const extension=restaurant.photograph.match(/\.([^.\\\/]+)$/).pop();
-    const filename = restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
+    const extension="jpg";//restaurant.photograph.match(/\.([^.\\\/]+)$/).pop();
+    const filename = restaurant.photograph;//restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
+    if (!filename) filename="10";
     return (`/img/${filename}-small.${extension}`);
   }
 
