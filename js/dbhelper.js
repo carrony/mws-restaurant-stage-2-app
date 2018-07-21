@@ -55,8 +55,6 @@ class DBHelper {
         fetch(DBHelper.DATABASE_URL)
           .then(response => response.json())
           .then(function(restaurants) {
-            console.log("vamos a añadir");
-            console.log(restaurants);
             // adding to database
             dbPromise.then( db =>{
               var tx = db.transaction('restaurants','readwrite');
@@ -69,12 +67,9 @@ class DBHelper {
             });
           })
           .catch(function(error) {
-            console.log("fallo red");
             callback(error,null);
           })
       } else {
-        console.log("hay datos");
-        console.log(restaurants);
         // Restuarants in DB
         callback(null,restaurants);
       }
@@ -202,7 +197,8 @@ class DBHelper {
   static imagesSrcsetForRestaurant(restaurant) {
     // adding atributtes for responsive images
     const extension="jpg";//restaurant.photograph.match(/\.([^.\\\/]+)$/).pop();
-    const filename = restaurant.photograph;//restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
+    let filename = restaurant.photograph;//restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
+    if (!filename) filename="10";
     return (`/img/${filename}-small.${extension} 250w,
             /img/${filename}-medium.${extension} 460w,
             /img/${filename}-large.${extension} 800w`);
@@ -223,7 +219,7 @@ class DBHelper {
   static imageUrlForRestaurant(restaurant) {
     // adding atributtes for responsive images
     const extension="jpg";//restaurant.photograph.match(/\.([^.\\\/]+)$/).pop();
-    const filename = restaurant.photograph;//restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
+    let filename = restaurant.photograph;//restaurant.photograph.replace(/\.([^.\\\/]+)$/,'')
     if (!filename) filename="10";
     return (`/img/${filename}-small.${extension}`);
   }
