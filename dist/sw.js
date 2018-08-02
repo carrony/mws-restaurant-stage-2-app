@@ -6,7 +6,10 @@ let urlsToCache = [
     '/index.html',
     '/restaurant.html',
     '/css/styles.css',
-    '/js/all.js'
+    '/js/all.js',
+    '/js/restaurant_info.js',
+    '/js/main.js',
+    '/manifest.json'
     //'/data/restaurants.json',
     // '/js/dbhelper.js',
     // '/js/main.js',

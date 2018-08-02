@@ -7,6 +7,8 @@ const sourcemaps = require('gulp-sourcemaps');
 const babel = require('gulp-babel');
 const concat = require('gulp-concat');
 const order = require('gulp-order');
+const imagemin = require("imagemin");
+const pngquant = require("imagemin-pngquant");
 
 // Initializing browsersync object
 const browserSync = require('browser-sync');//.create();
@@ -18,20 +20,33 @@ const config = {
         './*.html',
         './js/*.js'
     ],
-    browser: ['chrome','Firefox'],
+    browser: ['chrome'],//,'Firefox'],
     notify: false
 };
 
 
 // copying html file to dist folder
 const copyHTML = () => {
-    return gulp.src(['./*.html','./sw.js'])
+    return gulp.src(['./*.html','./sw.js', 'manifest.json'])
         .pipe(gulp.dest('./dist/'));
+};
+
+const copyLogo = () => {
+    return gulp.src('./img-src/icon.svg')
+        .pipe(gulp.dest('./dist/img'));
 };
 
 // Copying js files for each page of the app
 const copyJS = () =>{
     return gulp.src(['./js/main.js', './js/restaurant_info.js'])
+        //.pipe(sourcemaps.init())
+        //.pipe(babel())
+        /*.pipe(uglify({
+            mangle: false,
+
+            compress:false//{"unused": false,'collapse_vars': true,"hoist_vars": false,"hoist_funs":false,"if_return":false,"join_vars":false,"loops":false}
+         }).on('error', (error) => console.log(error)))*/
+        //.pipe(sourcemaps.write())
         .pipe(gulp.dest('./dist/js'));
 }
 
@@ -53,6 +68,12 @@ const responsiveImages = () => {
     }))
     .pipe(gulp.dest('./dist/img'));
 };
+
+const pngImages = () => {
+    return imagemin(['img-src/*.png'], 'dist/img', {use: [pngquant()]}).then(() => {
+        console.log('Images optimized');
+    });
+}
 
 // Minifiying JS files
 const jsMinifyDist = () => {
@@ -120,7 +141,7 @@ const styles = () => {
 
 const watchSass = () => {gulp.watch('./sass/**/*.scss', styles);};
 const watchScripts = () => {gulp.watch('./js/**/*.js', jsMinify);};
-const watchHTML = () => {gulp.watch('./*.html', copyHTML);};
+const watchHTML = () => {gulp.watch(['./*.html','manifest.json','sw.js'], copyHTML);};
 const watchDist = () => {
     gulp.watch(['./dist/*.html','./dist/css/*.css','./dist/js/*.js']);
 };
@@ -132,7 +153,7 @@ gulp.task('browserSync', () => {
 })
 
 // For procesing images and HTML
-const copyAssets = gulp.parallel(copyHTML, copyJS, responsiveImages);
+const copyAssets = gulp.parallel(copyHTML, copyJS, responsiveImages, pngImages,copyLogo);
 
 // Processing JS and styles
 const buildAllDev = gulp.series(copyAssets, styles, jsMinify);
