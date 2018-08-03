@@ -255,7 +255,7 @@ nav h1 a {
 /* TODO: Add a style for the hover anchors for accebility reasons */
 /* ====================== Restaurant Details ====================== */
 .inside header {
-  position: fixed;
+  //position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
@@ -266,7 +266,7 @@ nav h1 a {
   height: 300px;
   position: relative;
   width: 100%;
-  margin: 131px 0 0 0;
+  margin: 0px 0 0 0;
 }
 
 .inside #map {
@@ -405,9 +405,9 @@ nav h1 a {
     margin: 10px auto;
     padding: 0 30px 25px;
   }
-  nav {
+ /* nav {
     height: 80px;
-  }
+  }*/
   nav h1 {
     line-height: 80px;
   }
@@ -444,6 +444,14 @@ nav h1 a {
     width: calc((100% - 168px)/2);
     padding: 0 30px 25px;
   }
+
+
+  .inside header {
+    position: fixed;
+  }
+
+
+
 
   .inside #map-container {
     height: 87%;
